@@ -2,7 +2,14 @@ class ReviewsController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
   def index
-    reviews = Review.all
+    # We added a condition to the reviews#index action to account for whether the user is trying to access the index of all reviews (Review.all) or just the index of all reviews for a certain dog house (dog_house.reviews).
+    # The condition hinges on whether there's a :dog_house_id key in the params hash — in other words, whether the user navigated to /dog_houses/:dog_house_id/reviews or simply /reviews.
+    if params[:dog_house_id]
+      dog_house = DogHouse.find(params[:dog_house_id])
+      reviews = dog_house.reviews
+    else
+      reviews = Reviews.all
+    end
     render json: reviews, include: :dog_house
   end
 
